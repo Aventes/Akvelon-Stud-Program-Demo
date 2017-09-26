@@ -1,5 +1,5 @@
 {
-  "pageUrl": "minimal-react-webpack-babel-setup",
+  "pageUrl": "Akvelon-Demove-Example-For-Student-Program",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -30,6 +30,7 @@
   "dependencies": {
     "axios": "^0.16.2",
     "bootstrap": "^3.3.7",
+    "cors": "^2.8.4",
     "lodash": "^4.17.4",
     "prop-types": "^15.5.10",
     "react": "^15.5.4",

@@ -1,22 +1,38 @@
 import React, {Component} from "react";
+
 import {Button, Col, Grid, Row} from "react-bootstrap";
 import ProductList from "../components/products/ProductList";
 import Cart from "../components/cart/Cart";
 import CreateProductModal from "../modals/CreateProductModal";
 import CheckoutConfirmation from "../modals/CheckoutConfirmation";
-
-import {testProducts} from "../testData";
+import {loadAllProducts} from "../api/cart";
 
 class ProductContainer extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            products: testProducts,
+            products: [],
             productsToCart: [],
             showCreateModal: false,
             showCheckoutConfirmation: false
         }
+    }
+
+    componentDidMount() {
+        loadAllProducts()
+            .then((response) => { //successCallback
+                let products = response;
+                let productsToCart = response.filter(item => item.addedToCart);
+
+                this.setState({
+                    products: products,
+                    productsToCart: productsToCart
+                })
+            })
+            .catch((error) => { //errror callback
+                console.error(error);
+            });
     }
 
     addToCartHandler(product) {
