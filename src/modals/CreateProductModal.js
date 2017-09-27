@@ -49,7 +49,7 @@ class CreateProductModal extends Component {
             price: this.state.productPriceRef.value || 0
         };
 
-        this.props.createProductHandler(e, formData);
+        this.props.createProductHandler(formData);
         this.closeModal(e);
     }
 

@@ -2,10 +2,11 @@ import React, {Component} from "react";
 
 import {Button, Col, Grid, Row} from "react-bootstrap";
 import ProductList from "../components/products/ProductList";
-import Cart from "../components/cart/Cart";
+import ShoppingCart from "../components/cart/ShoppingCart";
 import CreateProductModal from "../modals/CreateProductModal";
-import CheckoutConfirmation from "../modals/CheckoutConfirmation";
-import {loadAllProducts} from "../api/cart";
+
+import {addProductToCartRequest, loadShoppingCartProductsRequest} from "../api/cart";
+import {loadAllProductsRequest, deleteProductRequest, editProductRequest, createProductRequest} from "../api/products";
 
 class ProductContainer extends Component {
     constructor(props) {
@@ -16,49 +17,61 @@ class ProductContainer extends Component {
             productsToCart: [],
             showCreateModal: false,
             showCheckoutConfirmation: false
-        }
+        };
+
+        this.loadProductListProducts = this.loadProductListProducts.bind(this);
+        this.loadCartProducts = this.loadCartProducts.bind(this);
     }
 
     componentDidMount() {
-        loadAllProducts()
-            .then((response) => { //successCallback
-                let products = response;
-                let productsToCart = response.filter(item => item.addedToCart);
+        this.loadProductListProducts();
+        this.loadCartProducts();
+    }
 
+    reloadAllProducts() {
+        this.loadProductListProducts();
+        this.loadCartProducts();
+    }
+
+    loadCartProducts() {
+        loadShoppingCartProductsRequest()
+            .then((products) => { //successCallback
                 this.setState({
-                    products: products,
-                    productsToCart: productsToCart
-                })
+                    productsToCart: products
+                });
+
+                return null;
             })
             .catch((error) => { //errror callback
                 console.error(error);
             });
     }
 
-    addToCartHandler(product) {
-        let newProduct = Object.assign({}, product, {addedToCart: true});
-
-        let productsToCart = this.state.productsToCart.concat(newProduct);
-
-        this.setState({
-            productsToCart: productsToCart
-        })
+    loadProductListProducts() {
+        loadAllProductsRequest()
+            .then((products) => { //successCallback
+                this.setState({
+                    products: products
+                });
+                return null;
+            })
+            .catch((error) => { //errror callback
+                console.error(error);
+            });
     }
 
-    removeFromCartHandler(productId) {
+    addToCartHandler(productId) {
         if (productId) {
-            this.setState({
-                productsToCart: this.updateProductsToCartList(productId),
-                products: this.removeProductFromProductList(productId)
-            })
+            addProductToCartRequest(productId)
+                .then((response) => this.reloadAllProducts());
         }
     }
 
-    onCheckout(e) {
-        this.setState({
-            productsToCart: [],
-            showCheckoutConfirmation: true
-        });
+    createProductHandler(product) {
+        if (product) {
+            createProductRequest(product)
+                .then((response) => this.reloadAllProducts());
+        }
     }
 
     showCreateModal(e) {
@@ -73,22 +86,6 @@ class ProductContainer extends Component {
         })
     }
 
-    onCloseCheckoutConfirmation() {
-        this.setState({
-            showCheckoutConfirmation: false
-        })
-    }
-
-    createProductHandler(e, product) {
-        if (product) {
-            product.id = this.state.products.length + 1;
-
-            this.setState({
-                products: this.state.products.concat(product)
-            });
-        }
-    }
-
     render() {
         return (
             <Grid fluid>
@@ -100,9 +97,8 @@ class ProductContainer extends Component {
                         />
                     </Col>
                     <Col md={5}>
-                        <Cart productsToCart={this.state.productsToCart}
-                              onCheckout={this.onCheckout.bind(this)}
-                              onRemoveFromCartHandler={this.removeFromCartHandler.bind(this)}/>
+                        <ShoppingCart productsToCart={this.state.productsToCart}
+                                      reloadAllProducts={this.reloadAllProducts.bind(this)}/>
                     </Col>
                 </Row>
 
@@ -112,23 +108,9 @@ class ProductContainer extends Component {
                     onClose={this.onCloseCreateModal.bind(this)}
                     showModal={this.state.showCreateModal}
                     createProductHandler={this.createProductHandler.bind(this)}/>
-
-                <CheckoutConfirmation showModal={this.state.showCheckoutConfirmation}
-                                      onClose={this.onCloseCheckoutConfirmation.bind(this)}/>
             </Grid>
         );
     }
-
-    updateProductsToCartList = (productId) =>
-        this.state.productsToCart.filter((item) => item.id !== productId);
-
-    removeProductFromProductList = (productId) =>
-        this.state.products.map((item, index) => {
-            if (item.id === productId) {
-                item.addedToCart = false;
-            }
-            return item;
-        });
 }
 
 export default ProductContainer;

@@ -7,7 +7,7 @@ const ProductTableItem = ({product, addToCart, removeFromCart}) =>
         <td>{product.name}</td>
         <td>{product.price}</td>
         <td>
-            <Button bsStyle="success" onClick={() => addToCart(product)}>Add to Cart</Button>
+            <Button bsStyle="success" onClick={() => addToCart(product.id)}>Add to Cart</Button>
         </td>
     </tr>
 ;

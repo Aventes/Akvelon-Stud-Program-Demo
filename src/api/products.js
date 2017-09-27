@@ -5,15 +5,15 @@ const PUT = 'PUT';
 const POST = 'POST';
 const DELETE = 'DELETE';
 
-const GET_ALL_CART_PRODUCTS_URL = `http://localhost:3000/cart/products`;
-const CART_CHECKOUT_URL = `http://localhost:3000/cart/checkout`;
-const ADD_PRODUCT_TO_CART = `http://localhost:3000/cart/`;
-const DELETE_PRODUCT_FROM_CART = `http://localhost:3000/cart/`;
+const GET_ALL_PRODUCTS_URL = "http://localhost:3000/products";
+const EDIT_PRODUCT_URL = "http://localhost:3000/products/";
+const DELETE_PRODUCT_URL = "http://localhost:3000/products/";
+const CREATE_PRODUCT_URL = "http://localhost:3000/products";
 
-export const loadShoppingCartProductsRequest = () => {
+export const loadAllProductsRequest = () => {
     return axios({
         method: GET,
-        url: GET_ALL_CART_PRODUCTS_URL,
+        url: GET_ALL_PRODUCTS_URL,
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -25,10 +25,11 @@ export const loadShoppingCartProductsRequest = () => {
     })
 };
 
-export const cartCheckoutRequest = () => {
+export const editProductRequest = (productId, product) => {
     return axios({
-        method: POST,
-        url: CART_CHECKOUT_URL,
+        method: GET,
+        url: EDIT_PRODUCT_URL + productId,
+        data: {product: product},
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -40,29 +41,30 @@ export const cartCheckoutRequest = () => {
     })
 };
 
-export const addProductToCartRequest = (productId) => {
-    return axios({
-        method: PUT,
-        url: ADD_PRODUCT_TO_CART + productId,
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        crossDomain: true,
-        responseType: 'json'
-    }).then(response => {
-        return response.data
-    })
-};
-
-export const removeProductFromCartRequest = (productId) => {
+export const deleteProductRequest = (productId) => {
     return axios({
         method: DELETE,
-        url: DELETE_PRODUCT_FROM_CART + productId,
+        url: DELETE_PRODUCT_URL + productId,
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
+        crossDomain: true,
+        responseType: 'json'
+    }).then(response => {
+        return response.data
+    })
+};
+
+export const createProductRequest = (product) => {
+    return axios({
+        method: POST,
+        url: CREATE_PRODUCT_URL,
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        data: {product: product},
         crossDomain: true,
         responseType: 'json'
     }).then(response => {
