@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import {Button, Modal, ModalFooter, ModalHeader, ModalTitle} from "react-bootstrap";
 
+//TODO: Move to redux
 class CheckoutConfirmation extends Component {
     constructor(props) {
         super(props);

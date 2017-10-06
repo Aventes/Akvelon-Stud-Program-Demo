@@ -12,6 +12,7 @@ import {
     ModalTitle
 } from "react-bootstrap";
 
+//TODO: Move to redux
 class CreateProductModal extends Component {
     constructor(props) {
         super(props);

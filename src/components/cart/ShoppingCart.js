@@ -1,11 +1,22 @@
-import React, {Component} from "react";
-import {Button, Col, ControlLabel, FormGroup, Row} from "react-bootstrap";
+import React, {Component, PropTypes} from "react";
+import {connect} from 'react-redux';
 
+import {Button, Col, ControlLabel, FormGroup, Row} from "react-bootstrap";
 import CheckoutConfirmation from "../../modals/CheckoutConfirmation";
+import {loadAllCartProducts} from './actions/carts'
+
 import {cartCheckoutRequest, removeProductFromCartRequest} from "../../api/cart";
 import CartProductList from "./CartProductList";
 
 class ShoppingCart extends Component {
+    static propTypes = {
+        productsShouldBeReloaded: PropTypes.bool.isRequired, //inner shopping cart proerty from redux
+        reloadShoppingCartProducts: PropTypes.bool.isRequired,  //this property comes from ProductContainer
+        productsToCart: PropTypes.array.isRequired,
+        loadAllCartProducts: PropTypes.func.isRequired,
+        reloadAllProducts: PropTypes.func //not required
+    };
+
     constructor(props) {
         super(props);
 
@@ -13,10 +24,20 @@ class ShoppingCart extends Component {
             showCheckoutConfirmation: false
         };
 
+        this.props.loadAllCartProducts();
+
         this.onCheckout = this.onCheckout.bind(this);
         this.calculateAmount = this.calculateAmount.bind(this);
         this.calculateTotal = this.calculateTotal.bind(this);
         this.renderPanelFooter = this.renderPanelFooter.bind(this);
+    }
+
+    componentWillReceiveProps(nextProps, nextState) {
+        if (nextProps.productsShouldBeReloaded && !this.props.productsShouldBeReloaded
+        || nextProps.reloadShoppingCartProducts && !this.props.reloadShoppingCartProducts) {
+            this.props.loadAllCartProducts();
+            this.props.reloadAllProducts()
+        }
     }
 
     calculateTotal() {
@@ -28,15 +49,17 @@ class ShoppingCart extends Component {
         return this.props.productsToCart.length;
     }
 
+    //TODO: Move to redux
     onCheckout() {
         cartCheckoutRequest()
             .then((response) => this.setState({showCheckoutConfirmation: true}))
-            .then((response) => this.props.reloadAllProducts())
+            .then((response) => this.props.loadAllCartProducts())
     }
 
+    //TODO: Move to redux
     removeProductFromCart(productId) {
         removeProductFromCartRequest(productId)
-            .then((response) => this.props.reloadAllProducts())
+            .then((response) => this.props.loadAllCartProducts())
     }
 
     onCloseCheckoutConfirmation() {
@@ -78,4 +101,19 @@ class ShoppingCart extends Component {
     }
 }
 
-export default ShoppingCart;
+const mapStateToProps = (state, ownProps) => {
+    debugger;
+    return {
+        productsToCart: state.cartsReducers.products,
+        productsShouldBeReloaded: state.cartsReducers.productsShouldBeReloaded
+    };
+};
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+    debugger;
+    return {
+        loadAllCartProducts: () => dispatch(loadAllCartProducts())
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ShoppingCart);

@@ -1,72 +1,61 @@
-import React, {Component} from "react";
+import React, {Component, PropTypes} from "react";
+import {connect} from 'react-redux';
 
 import {Button, Col, Grid, Row} from "react-bootstrap";
 import ProductList from "../components/products/ProductList";
 import ShoppingCart from "../components/cart/ShoppingCart";
 import CreateProductModal from "../modals/CreateProductModal";
 
-import {addProductToCartRequest, loadShoppingCartProductsRequest} from "../api/cart";
-import {loadAllProductsRequest, deleteProductRequest, editProductRequest, createProductRequest} from "../api/products";
+import {loadAllProducts} from './products/actions/products';
+import {loadShoppingCartProductsRequest} from "../api/cart";
+import {createProductRequest} from "../api/products";
 
 class ProductContainer extends Component {
+    static propTypes = {
+        loadAllProducts: PropTypes.func.isRequired,
+        productsShouldBeReloaded: PropTypes.bool.isRequired
+    };
+
     constructor(props) {
         super(props);
 
         this.state = {
             products: [],
-            productsToCart: [],
             showCreateModal: false,
-            showCheckoutConfirmation: false
+            showCheckoutConfirmation: false,
+            reloadShoppingCartProducts: false
         };
 
         this.loadProductListProducts = this.loadProductListProducts.bind(this);
-        this.loadCartProducts = this.loadCartProducts.bind(this);
     }
 
-    componentDidMount() {
-        this.loadProductListProducts();
-        this.loadCartProducts();
-    }
+    componentWillReceiveProps(nextProps, nextState) {
+        if (nextProps.productsShouldBeReloaded && !this.props.productsShouldBeReloaded) {
+            debugger;
+            this.reloadAllProducts();
 
-    reloadAllProducts() {
-        this.loadProductListProducts();
-        this.loadCartProducts();
-    }
-
-    loadCartProducts() {
-        loadShoppingCartProductsRequest()
-            .then((products) => { //successCallback
-                this.setState({
-                    productsToCart: products
-                });
-
-                return null;
+            this.setState({
+                reloadShoppingCartProducts: true
             })
-            .catch((error) => { //errror callback
-                console.error(error);
-            });
-    }
-
-    loadProductListProducts() {
-        loadAllProductsRequest()
-            .then((products) => { //successCallback
-                this.setState({
-                    products: products
-                });
-                return null;
-            })
-            .catch((error) => { //errror callback
-                console.error(error);
-            });
-    }
-
-    addToCartHandler(productId) {
-        if (productId) {
-            addProductToCartRequest(productId)
-                .then((response) => this.reloadAllProducts());
         }
     }
 
+    componentDidMount() {
+        this.props.loadAllProducts();
+    }
+
+    reloadAllProducts() {
+        this.props.loadAllProducts();
+        this.setState({
+            reloadShoppingCartProducts: false
+        })
+    }
+
+    loadProductListProducts() {
+        this.props.loadAllCartProducts();
+    }
+
+    //TODO: Move to redux
     createProductHandler(product) {
         if (product) {
             createProductRequest(product)
@@ -91,14 +80,11 @@ class ProductContainer extends Component {
             <Grid fluid>
                 <Row>
                     <Col md={7}>
-                        <ProductList
-                            products={this.state.products}
-                            onAddToCartHandler={this.addToCartHandler.bind(this)}
-                        />
+                        <ProductList products={this.props.products}/>
                     </Col>
                     <Col md={5}>
-                        <ShoppingCart productsToCart={this.state.productsToCart}
-                                      reloadAllProducts={this.reloadAllProducts.bind(this)}/>
+                        <ShoppingCart reloadAllProducts={this.reloadAllProducts.bind(this)}
+                                      reloadShoppingCartProducts={this.state.reloadShoppingCartProducts}/>
                     </Col>
                 </Row>
 
@@ -113,4 +99,19 @@ class ProductContainer extends Component {
     }
 }
 
-export default ProductContainer;
+const mapStateToProps = (state, ownProps) => {
+    debugger;
+    return {
+        products: state.productsReducers.products,
+        productsShouldBeReloaded: state.productsReducers.productsShouldBeReloaded
+    };
+};
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+    debugger;
+    return {
+        loadAllProducts: () => dispatch(loadAllProducts())
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ProductContainer);
